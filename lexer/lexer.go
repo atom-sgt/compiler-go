@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"fmt"
 	"unicode"
 )
 
@@ -27,12 +26,8 @@ func newToken(t TokenType, val string) Token {
 	}
 }
 
-func printToken(token Token) {
-	fmt.Printf("Token: Type=\"%v\", Value=\"%v\"\n", token.Type, token.Value)
-}
-
-func GetTokens(input string) {
-	println(input)
+func GetTokens(input string) []Token {
+	var tokens []Token
 	for i := 0; i < len(input); {
 		c := rune(input[i])
 
@@ -51,7 +46,7 @@ func GetTokens(input string) {
 
 			value := input[start:i]
 			token := newToken(TK_NUMBER, value)
-			printToken(token)
+			tokens = append(tokens, token)
 			continue
 		}
 
@@ -64,7 +59,7 @@ func GetTokens(input string) {
 
 			value := input[start:i]
 			token := newToken(TK_INDENTIFIER, value)
-			printToken(token)
+			tokens = append(tokens, token)
 			continue
 		}
 
@@ -78,7 +73,7 @@ func GetTokens(input string) {
 
 			value := string(input[start:i])
 			token := newToken(TK_OPERATOR, value)
-			printToken(token)
+			tokens = append(tokens, token)
 			continue
 		}
 
@@ -86,15 +81,17 @@ func GetTokens(input string) {
 		if isPunctuation(c) {
 			value := string(c)
 			token := newToken(TK_PUNCTUATION, value)
-			printToken(token)
 			i++
+			tokens = append(tokens, token)
 			continue
 		}
 
 		// Unknown
 		token := newToken(TK_UNKNOWN, "")
-		printToken(token)
+		tokens = append(tokens, token)
 	}
+
+	return tokens
 }
 
 func isWhitespace(c rune) bool {
