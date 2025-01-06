@@ -1,17 +1,16 @@
 package lexer
 
-import (
-	"unicode"
-)
+import "unicode"
 
 type TokenType string
 
 const (
-	TK_INDENTIFIER TokenType = "INDENTIFIER"
-	TK_NUMBER                = "NUMBER"
-	TK_OPERATOR              = "OPERATOR"
-	TK_PUNCTUATION           = "PUNCTUATION"
-	TK_UNKNOWN               = "UNKNOWN"
+	Identifier  TokenType = "INDENTIFIER"
+	Number                = "NUMBER"
+	Punctuation           = "PUNCTUATION"
+	Operator              = "OPERATOR"
+	Closure               = "CLOSURE"
+	Unknown               = "UNKNOWN"
 )
 
 type Token struct {
@@ -19,79 +18,84 @@ type Token struct {
 	Value string
 }
 
-func newToken(t TokenType, val string) Token {
+func NewToken(t TokenType, v string) Token {
 	return Token{
 		Type:  t,
-		Value: val,
+		Value: v,
 	}
 }
 
-func GetTokens(input string) []Token {
-	var tokens []Token
-	for i := 0; i < len(input); {
-		c := rune(input[i])
+type Tokenizer struct {
+	position     int
+	readPosition int
+	char         rune
+	input        string
+}
 
-		// Skip whitespace
-		if unicode.IsSpace(c) {
-			i++
-			continue
-		}
+func NewTokenizer(input string) Tokenizer {
+	tokenizer := Tokenizer{
+		position:     0,
+		readPosition: 0,
+		input:        input,
+	}
+	tokenizer.readChar()
 
-		// Indentify numbers
-		if isNumber(c) {
-			start := i
-			for isNumber(rune(input[i])) || i >= len(input) {
-				i++
-			}
+	return tokenizer
+}
 
-			value := input[start:i]
-			token := newToken(TK_NUMBER, value)
-			tokens = append(tokens, token)
-			continue
-		}
-
-		// Identify identifiers
-		if isAlpha(c) {
-			start := i
-			for isAlphanumeric(rune(input[i])) || i >= len(input) {
-				i++
-			}
-
-			value := input[start:i]
-			token := newToken(TK_INDENTIFIER, value)
-			tokens = append(tokens, token)
-			continue
-		}
-
-		// Identify operators
-		if isOperator(c) {
-			start := i
-			i++
-			if i < len(input) && isCompoundOperator(rune(input[start]), rune(input[i])) {
-				i++
-			}
-
-			value := string(input[start:i])
-			token := newToken(TK_OPERATOR, value)
-			tokens = append(tokens, token)
-			continue
-		}
-
-		// Identify punctuation
-		if isPunctuation(c) {
-			value := string(c)
-			token := newToken(TK_PUNCTUATION, value)
-			i++
-			tokens = append(tokens, token)
-			continue
-		}
-
-		// Unknown
-		token := newToken(TK_UNKNOWN, "")
-		tokens = append(tokens, token)
+func (tokenizer *Tokenizer) readChar() {
+	if tokenizer.readPosition >= len(tokenizer.input) {
+		tokenizer.char = '\x00'
+	} else {
+		tokenizer.char = rune(tokenizer.input[tokenizer.readPosition])
 	}
 
-	return tokens
+	tokenizer.position = tokenizer.readPosition
+	tokenizer.readPosition++
+}
+
+func (tokenizer *Tokenizer) GetNextToken() Token {
+	// Skip whitespace
+	for isWhitespace(tokenizer.char) {
+		tokenizer.readChar()
+	}
+
+	if isNumber(tokenizer.char) {
+		start := tokenizer.position
+		for isNumber(tokenizer.char) {
+			tokenizer.readChar()
+		}
+
+		return NewToken(Number, tokenizer.input[start:tokenizer.position])
+	}
+
+	if isAlpha(tokenizer.char) {
+		start := tokenizer.position
+		for isAlpha(tokenizer.char) {
+			tokenizer.readChar()
+		}
+
+		return NewToken(Identifier, tokenizer.input[start:tokenizer.position])
+	}
+
+	if isPunctuation(tokenizer.char) {
+		return NewToken(Punctuation, string(tokenizer.char))
+	}
+
+	if isOperator(tokenizer.char) {
+		start := tokenizer.position
+		for isOperator(tokenizer.char) {
+			tokenizer.readChar()
+		}
+
+		return NewToken(Operator, tokenizer.input[start:tokenizer.position])
+	}
+
+	if isClosure(tokenizer.char) {
+		return NewToken(Closure, string(tokenizer.char))
+	}
+
+	return NewToken(Unknown, string(tokenizer.char))
 }
 
 func isWhitespace(c rune) bool {
@@ -128,9 +132,16 @@ func isCompoundOperator(c1 rune, c2 rune) bool {
 
 func isPunctuation(c rune) bool {
 	return c == ';' ||
+		c == '.' ||
 		c == ',' ||
-		c == '(' ||
+		c == '?'
+}
+
+func isClosure(c rune) bool {
+	return c == '(' ||
 		c == ')' ||
+		c == '[' ||
+		c == ']' ||
 		c == '{' ||
 		c == '}'
 }

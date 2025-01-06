@@ -1,18 +1,14 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/atom-sgt/compiler-go/lexer"
+	"github.com/atom-sgt/compiler-go/parser"
 )
 
 func main() {
 	input := "int main() { int a = 42; a++; }"
-	println(input)
 
-	tokens := lexer.GetTokens(input)
-
-	for _, token := range tokens {
-		fmt.Println(token)
-	}
+	lexer := lexer.NewTokenizer(input)
+	parser := parser.NewParser(lexer)
+	parser.GetAbstractSyntaxTree()
 }
