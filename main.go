@@ -7,6 +7,7 @@ import (
 
 func main() {
 	input := "int main() { int a = 42; a++; }"
+	println(input)
 
 	lexer := lexer.NewTokenizer(input)
 	parser := parser.NewParser(lexer)

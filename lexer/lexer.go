@@ -1,6 +1,8 @@
 package lexer
 
-import "unicode"
+import (
+	"unicode"
+)
 
 type TokenType string
 
@@ -10,6 +12,7 @@ const (
 	Punctuation           = "PUNCTUATION"
 	Operator              = "OPERATOR"
 	Closure               = "CLOSURE"
+	Eof                   = "EOF"
 	Unknown               = "UNKNOWN"
 )
 
@@ -26,76 +29,93 @@ func NewToken(t TokenType, v string) Token {
 }
 
 type Tokenizer struct {
-	position     int
-	readPosition int
-	char         rune
-	input        string
+	currentPosition int
+	readPosition    int
+	char            rune
+	input           string
 }
 
 func NewTokenizer(input string) Tokenizer {
 	tokenizer := Tokenizer{
-		position:     0,
-		readPosition: 0,
-		input:        input,
+		currentPosition: 0,
+		readPosition:    0,
+		input:           input,
 	}
-	tokenizer.readChar()
 
 	return tokenizer
 }
 
-func (tokenizer *Tokenizer) readChar() {
+func (tokenizer *Tokenizer) nextChar() {
 	if tokenizer.readPosition >= len(tokenizer.input) {
 		tokenizer.char = '\x00'
 	} else {
 		tokenizer.char = rune(tokenizer.input[tokenizer.readPosition])
 	}
 
-	tokenizer.position = tokenizer.readPosition
+	tokenizer.currentPosition = tokenizer.readPosition
 	tokenizer.readPosition++
 }
 
+func (tokenizer *Tokenizer) prevChar() {
+	if tokenizer.readPosition < 0 {
+		tokenizer.char = '\x00'
+	} else {
+		tokenizer.char = rune(tokenizer.input[tokenizer.readPosition])
+	}
+
+	tokenizer.currentPosition = tokenizer.readPosition
+	tokenizer.readPosition--
+}
+
+func (tokenizer *Tokenizer) peekNextChar() rune {
+	if tokenizer.readPosition >= len(tokenizer.input) {
+		return '\x00'
+	} else {
+		return rune(tokenizer.input[tokenizer.readPosition])
+	}
+}
+
 func (tokenizer *Tokenizer) GetNextToken() Token {
+	tokenizer.nextChar()
+	var nextToken Token
+
 	// Skip whitespace
 	for isWhitespace(tokenizer.char) {
-		tokenizer.readChar()
+		tokenizer.nextChar()
 	}
 
 	if isNumber(tokenizer.char) {
-		start := tokenizer.position
-		for isNumber(tokenizer.char) {
-			tokenizer.readChar()
+		start := tokenizer.currentPosition
+		for isNumber(tokenizer.peekNextChar()) {
+			tokenizer.nextChar()
 		}
 
-		return NewToken(Number, tokenizer.input[start:tokenizer.position])
-	}
-
-	if isAlpha(tokenizer.char) {
-		start := tokenizer.position
-		for isAlpha(tokenizer.char) {
-			tokenizer.readChar()
+		nextToken = NewToken(Number, tokenizer.input[start:tokenizer.readPosition])
+	} else if isAlpha(tokenizer.char) {
+		start := tokenizer.currentPosition
+		for isAlpha(tokenizer.peekNextChar()) {
+			tokenizer.nextChar()
 		}
 
-		return NewToken(Identifier, tokenizer.input[start:tokenizer.position])
-	}
-
-	if isPunctuation(tokenizer.char) {
-		return NewToken(Punctuation, string(tokenizer.char))
-	}
-
-	if isOperator(tokenizer.char) {
-		start := tokenizer.position
-		for isOperator(tokenizer.char) {
-			tokenizer.readChar()
+		nextToken = NewToken(Identifier, tokenizer.input[start:tokenizer.readPosition])
+	} else if isOperator(tokenizer.char) {
+		start := tokenizer.currentPosition
+		for isOperator(tokenizer.peekNextChar()) {
+			tokenizer.nextChar()
 		}
 
-		return NewToken(Operator, tokenizer.input[start:tokenizer.position])
+		nextToken = NewToken(Operator, tokenizer.input[start:tokenizer.readPosition])
+	} else if isPunctuation(tokenizer.char) {
+		nextToken = NewToken(Punctuation, string(tokenizer.char))
+	} else if isClosure(tokenizer.char) {
+		nextToken = NewToken(Closure, string(tokenizer.char))
+	} else if isEof(tokenizer.char) {
+		nextToken = NewToken(Eof, string(tokenizer.char))
+	} else {
+		nextToken = NewToken(Unknown, string(tokenizer.char))
 	}
 
-	if isClosure(tokenizer.char) {
-		return NewToken(Closure, string(tokenizer.char))
-	}
-
-	return NewToken(Unknown, string(tokenizer.char))
+	return nextToken
 }
 
 func isWhitespace(c rune) bool {
@@ -144,4 +164,8 @@ func isClosure(c rune) bool {
 		c == ']' ||
 		c == '{' ||
 		c == '}'
+}
+
+func isEof(c rune) bool {
+	return c == '\x00'
 }

@@ -43,9 +43,11 @@ type Return struct {
 func (parser Parser) GetAbstractSyntaxTree() {
 	for {
 		t := parser.lexer.GetNextToken()
-		if t.Type == lexer.Unknown {
+
+		if t.Type == lexer.Unknown || t.Type == lexer.Eof {
 			return
 		}
-		fmt.Println(t)
+
+		fmt.Println(t.Value, t.Type)
 	}
 }
