@@ -13,10 +13,10 @@ func Test_GetNextToken_Number(t *testing.T) {
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Error("Bad token type")
+		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Error("Bad token value")
+		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
 	}
 }
 
@@ -31,10 +31,10 @@ func Test_GetNextToken_Identifier(t *testing.T) {
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Error("Bad token type")
+		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Error("Bad token value")
+		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
 	}
 }
 
@@ -49,10 +49,10 @@ func Test_GetNextToken_Punctuation(t *testing.T) {
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Error("Bad token type")
+		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Error("Bad token value")
+		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
 	}
 }
 
@@ -67,10 +67,10 @@ func Test_GetNextToken_Closure(t *testing.T) {
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Error("Bad token type")
+		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Error("Bad token value")
+		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
 	}
 }
 
@@ -85,9 +85,27 @@ func Test_GetNextToken_Operator(t *testing.T) {
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Error("Bad token type")
+		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Error("Bad token value")
+		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
+	}
+}
+
+func Test_GetNextToken_DoubleSequences(t *testing.T) {
+	// Arrange
+	var input = "()"
+
+	// Act
+	var lexer = NewTokenizer(input)
+	var firstToken = lexer.GetNextToken()
+	var secondToken = lexer.GetNextToken()
+
+	// Assert
+	if firstToken.Value == "(" {
+		t.Errorf("Bad token value: \"%s\"", firstToken.Value)
+	}
+	if secondToken.Value == ")" {
+		t.Errorf("Bad token value: \"%s\"", secondToken.Value)
 	}
 }
