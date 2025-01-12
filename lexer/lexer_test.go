@@ -8,7 +8,7 @@ import (
 
 func Test_GetNextToken_Number(t *testing.T) {
 	// Arrange
-	expectedTokenType := lexer.TokenType(lexer.Number)
+	expectedTokenType := lexer.TokenType(lexer.LIT_NUMBER)
 	expectedValue := "123"
 
 	// Act
@@ -26,7 +26,7 @@ func Test_GetNextToken_Number(t *testing.T) {
 
 func Test_GetNextToken_Identifier(t *testing.T) {
 	// Arrange
-	var expectedTokenType = lexer.TokenType(lexer.Identifier)
+	var expectedTokenType = lexer.TokenType(lexer.IDENT)
 	var expectedValue = "abc"
 
 	// Act

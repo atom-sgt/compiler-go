@@ -19,7 +19,7 @@ func (tokenizer *Tokenizer) GetNextToken() Token {
 			runes = append(runes, tokenizer.Current())
 		}
 
-		nextToken = NewToken(Number, string(runes))
+		nextToken = NewToken(LIT_NUMBER, string(runes))
 	} else if isAlpha(tokenizer.Current()) {
 		runes := []rune{tokenizer.Current()}
 		for isAlpha(tokenizer.Peek()) {
@@ -27,7 +27,7 @@ func (tokenizer *Tokenizer) GetNextToken() Token {
 			runes = append(runes, tokenizer.Current())
 		}
 
-		nextToken = NewToken(Identifier, string(runes))
+		nextToken = NewToken(IDENT, string(runes))
 	} else if isOperator(tokenizer.Current()) {
 		runes := []rune{tokenizer.Current()}
 		for isOperator(tokenizer.Peek()) {
@@ -41,9 +41,9 @@ func (tokenizer *Tokenizer) GetNextToken() Token {
 	} else if isClosure(tokenizer.Current()) {
 		nextToken = NewToken(Closure, string(tokenizer.Current()))
 	} else if isEof(tokenizer.Current()) {
-		nextToken = NewToken(Eof, string(tokenizer.Current()))
+		nextToken = NewToken(EOF, string(tokenizer.Current()))
 	} else {
-		nextToken = NewToken(Unknown, string(tokenizer.Current()))
+		nextToken = NewToken(UNKNOWN, string(tokenizer.Current()))
 	}
 
 	return nextToken

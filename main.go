@@ -6,10 +6,11 @@ import (
 )
 
 func main() {
-	input := "int main() { int a = 42; a++; }"
+	// input := "int main() { int a = 42; a++; }"
+	input := "1 + 2"
 	println(input)
 
 	lexer := lexer.NewTokenizer(input)
 	parser := parser.NewParser(lexer)
-	parser.GetAbstractSyntaxTree()
+	parser.Parse()
 }

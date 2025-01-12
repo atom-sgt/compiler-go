@@ -16,38 +16,59 @@ func NewParser(lexer lexer.Tokenizer) Parser {
 	}
 }
 
-type Node struct {
-	Type     string
-	Value    string
-	Children []*Node
+func (p *Parser) Parse() {
+	p.ParseProgram().PrintTree()
 }
 
-type Constant struct {
-	Value string
+func (p *Parser) ParseProgram() *AstNode {
+	x := p.ParseExpression()
+
+	return &AstNode{
+		Type:     Program,
+		Children: []*AstNode{x},
+	}
 }
 
-type Operator struct {
-	Value string
+func (p *Parser) ParseExpression() *AstNode {
+	println("begin exp")
+
+	left := p.ParseNumber()
+	println(left.Value)
+	op := p.lexer.GetNextToken()
+	println(op.Value)
+	right := p.ParseNumber()
+	println(right.Value)
+
+	expectTokenType(op, lexer.Operator)
+	return &AstNode{
+		Type:     BinaryOp,
+		Value:    op.Value,
+		Children: []*AstNode{left, right},
+	}
 }
 
-type Operation struct {
-	LeftValue  Constant
-	RightValue Constant
-	Operator   Operator
+func (p *Parser) ParseNumber() *AstNode {
+	println("parse num")
+	t := p.lexer.GetNextToken()
+
+	expectTokenType(t, lexer.LIT_NUMBER)
+	return &AstNode{
+		Type:  Number,
+		Value: t.Value,
+	}
 }
 
-type Return struct {
-	Value Operation
-}
-
-func (parser Parser) GetAbstractSyntaxTree() {
-	for {
-		t := parser.lexer.GetNextToken()
-
-		if t.Type == lexer.Unknown || t.Type == lexer.Eof {
-			return
+func matchTokenTypes(t lexer.Token, types ...lexer.TokenType) bool {
+	for _, type_ := range types {
+		if t.Type == type_ {
+			return true
 		}
+	}
+	return false
+}
 
-		fmt.Println(t.Value, t.Type)
+func expectTokenType(t lexer.Token, type_ lexer.TokenType) {
+	if t.Type != type_ {
+		panic(fmt.Sprintf("Expected \"%s\", found \"%s\"", string(type_), string(t.Type)))
 	}
 }
