@@ -1,111 +1,117 @@
-package lexer
+package lexer_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/atom-sgt/compiler-go/lexer"
+)
 
 func Test_GetNextToken_Number(t *testing.T) {
 	// Arrange
-	var expectedTokenType = TokenType(Number)
-	var expectedValue = "123"
+	expectedTokenType := lexer.TokenType(lexer.Number)
+	expectedValue := "123"
 
 	// Act
-	var lexer = NewTokenizer(expectedValue)
+	var lexer = lexer.NewTokenizer(expectedValue)
 	var nextToken = lexer.GetNextToken()
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedTokenType, nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedValue, nextToken.Value)
 	}
 }
 
 func Test_GetNextToken_Identifier(t *testing.T) {
 	// Arrange
-	var expectedTokenType = TokenType(Identifier)
+	var expectedTokenType = lexer.TokenType(lexer.Identifier)
 	var expectedValue = "abc"
 
 	// Act
-	var lexer = NewTokenizer(expectedValue)
+	var lexer = lexer.NewTokenizer(expectedValue)
 	var nextToken = lexer.GetNextToken()
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedTokenType, nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedValue, nextToken.Value)
 	}
 }
 
 func Test_GetNextToken_Punctuation(t *testing.T) {
 	// Arrange
-	var expectedTokenType = TokenType(Punctuation)
+	var expectedTokenType = lexer.TokenType(lexer.Punctuation)
 	var expectedValue = ","
 
 	// Act
-	var lexer = NewTokenizer(expectedValue)
+	var lexer = lexer.NewTokenizer(expectedValue)
 	var nextToken = lexer.GetNextToken()
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedTokenType, nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedValue, nextToken.Value)
 	}
 }
 
 func Test_GetNextToken_Closure(t *testing.T) {
 	// Arrange
-	var expectedTokenType = TokenType(Closure)
+	var expectedTokenType = lexer.TokenType(lexer.Closure)
 	var expectedValue = "["
 
 	// Act
-	var lexer = NewTokenizer(expectedValue)
+	var lexer = lexer.NewTokenizer(expectedValue)
 	var nextToken = lexer.GetNextToken()
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedTokenType, nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedValue, nextToken.Value)
 	}
 }
 
 func Test_GetNextToken_Operator(t *testing.T) {
 	// Arrange
-	var expectedTokenType = TokenType(Operator)
+	var expectedTokenType = lexer.TokenType(lexer.Operator)
 	var expectedValue = "="
 
 	// Act
-	var lexer = NewTokenizer(expectedValue)
+	var lexer = lexer.NewTokenizer(expectedValue)
 	var nextToken = lexer.GetNextToken()
 
 	// Assert
 	if nextToken.Type != expectedTokenType {
-		t.Errorf("Bad token type: \"%s\"", nextToken.Type)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedTokenType, nextToken.Type)
 	}
 	if nextToken.Value != expectedValue {
-		t.Errorf("Bad token value: \"%s\"", nextToken.Value)
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedValue, nextToken.Value)
 	}
 }
 
 func Test_GetNextToken_DoubleSequences(t *testing.T) {
 	// Arrange
 	var input = "()"
+	var expectedFirstValue = "("
+	var expectedSecondValue = ")"
 
 	// Act
-	var lexer = NewTokenizer(input)
+	var lexer = lexer.NewTokenizer(input)
 	var firstToken = lexer.GetNextToken()
 	var secondToken = lexer.GetNextToken()
 
 	// Assert
-	if firstToken.Value == "(" {
-		t.Errorf("Bad token value: \"%s\"", firstToken.Value)
+	if firstToken.Value != expectedFirstValue {
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedFirstValue, firstToken.Value)
 	}
-	if secondToken.Value == ")" {
-		t.Errorf("Bad token value: \"%s\"", secondToken.Value)
+	if secondToken.Value != expectedSecondValue {
+		t.Errorf("Expected \"%v\", found \"%v\"", expectedSecondValue, secondToken.Value)
 	}
 }
