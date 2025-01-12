@@ -4,115 +4,46 @@ import (
 	"unicode"
 )
 
-type TokenType string
-
-const (
-	Identifier  TokenType = "INDENTIFIER"
-	Number                = "NUMBER"
-	Punctuation           = "PUNCTUATION"
-	Operator              = "OPERATOR"
-	Closure               = "CLOSURE"
-	Eof                   = "EOF"
-	Unknown               = "UNKNOWN"
-)
-
-type Token struct {
-	Type  TokenType
-	Value string
-}
-
-func NewToken(t TokenType, v string) Token {
-	return Token{
-		Type:  t,
-		Value: v,
-	}
-}
-
-type Tokenizer struct {
-	currentPosition int
-	readPosition    int
-	char            rune
-	input           string
-}
-
-func NewTokenizer(input string) Tokenizer {
-	tokenizer := Tokenizer{
-		currentPosition: 0,
-		readPosition:    0,
-		input:           input,
-	}
-
-	return tokenizer
-}
-
-func (tokenizer *Tokenizer) nextChar() {
-	if tokenizer.readPosition >= len(tokenizer.input) {
-		tokenizer.char = '\x00'
-	} else {
-		tokenizer.char = rune(tokenizer.input[tokenizer.readPosition])
-	}
-
-	tokenizer.currentPosition = tokenizer.readPosition
-	tokenizer.readPosition++
-}
-
-func (tokenizer *Tokenizer) prevChar() {
-	if tokenizer.readPosition < 0 {
-		tokenizer.char = '\x00'
-	} else {
-		tokenizer.char = rune(tokenizer.input[tokenizer.readPosition])
-	}
-
-	tokenizer.currentPosition = tokenizer.readPosition
-	tokenizer.readPosition--
-}
-
-func (tokenizer *Tokenizer) peekNextChar() rune {
-	if tokenizer.readPosition >= len(tokenizer.input) {
-		return '\x00'
-	} else {
-		return rune(tokenizer.input[tokenizer.readPosition])
-	}
-}
-
 func (tokenizer *Tokenizer) GetNextToken() Token {
-	tokenizer.nextChar()
+	tokenizer.Step()
 	var nextToken Token
 
-	// Skip whitespace
-	for isWhitespace(tokenizer.char) {
-		tokenizer.nextChar()
+	for isWhitespace(tokenizer.Current()) {
+		tokenizer.Step()
 	}
 
-	if isNumber(tokenizer.char) {
-		start := tokenizer.currentPosition
-		for isNumber(tokenizer.peekNextChar()) {
-			tokenizer.nextChar()
+	if isNumber(tokenizer.Current()) {
+		runes := []rune{tokenizer.Current()}
+		for isNumber(tokenizer.Peek()) {
+			tokenizer.Step()
+			runes = append(runes, tokenizer.Current())
 		}
 
-		nextToken = NewToken(Number, tokenizer.input[start:tokenizer.readPosition])
-	} else if isAlpha(tokenizer.char) {
-		start := tokenizer.currentPosition
-		for isAlpha(tokenizer.peekNextChar()) {
-			tokenizer.nextChar()
+		nextToken = NewToken(Number, string(runes))
+	} else if isAlpha(tokenizer.Current()) {
+		runes := []rune{tokenizer.Current()}
+		for isAlpha(tokenizer.Peek()) {
+			tokenizer.Step()
+			runes = append(runes, tokenizer.Current())
 		}
 
-		nextToken = NewToken(Identifier, tokenizer.input[start:tokenizer.readPosition])
-	} else if isOperator(tokenizer.char) {
-		start := tokenizer.currentPosition
-		for isOperator(tokenizer.peekNextChar()) {
-			tokenizer.nextChar()
+		nextToken = NewToken(Identifier, string(runes))
+	} else if isOperator(tokenizer.Current()) {
+		runes := []rune{tokenizer.Current()}
+		for isOperator(tokenizer.Peek()) {
+			tokenizer.Step()
+			runes = append(runes, tokenizer.Current())
 		}
 
-		nextToken = NewToken(Operator, tokenizer.input[start:tokenizer.readPosition])
-	} else if isPunctuation(tokenizer.char) {
-		nextToken = NewToken(Punctuation, string(tokenizer.char))
-	} else if isClosure(tokenizer.char) {
-		nextToken = NewToken(Closure, string(tokenizer.char))
-	} else if isEof(tokenizer.char) {
-		nextToken = NewToken(Eof, string(tokenizer.char))
+		nextToken = NewToken(Operator, string(runes))
+	} else if isPunctuation(tokenizer.Current()) {
+		nextToken = NewToken(Punctuation, string(tokenizer.Current()))
+	} else if isClosure(tokenizer.Current()) {
+		nextToken = NewToken(Closure, string(tokenizer.Current()))
+	} else if isEof(tokenizer.Current()) {
+		nextToken = NewToken(Eof, string(tokenizer.Current()))
 	} else {
-		nextToken = NewToken(Unknown, string(tokenizer.char))
+		nextToken = NewToken(Unknown, string(tokenizer.Current()))
 	}
 
 	return nextToken
